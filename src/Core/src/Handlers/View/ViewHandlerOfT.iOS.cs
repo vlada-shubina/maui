@@ -36,59 +36,8 @@ namespace Microsoft.Maui.Handlers
 			Invoke(nameof(IView.Frame), rect);
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			var nativeView = this.GetWrappedNativeView();
-
-			if (nativeView == null)
-			{
-				return new Size(widthConstraint, heightConstraint);
-			}
-
-			var sizeThatFits = nativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
-
-			var size = new Size(
-				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
-				sizeThatFits.Height == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Height);
-
-			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
-			{
-				nativeView.SizeToFit();
-				size = new Size(nativeView.Frame.Width, nativeView.Frame.Height);
-			}
-
-			var finalWidth = ResolveConstraints(size.Width, VirtualView.Width, VirtualView.MinimumWidth, VirtualView.MaximumWidth);
-			var finalHeight = ResolveConstraints(size.Height, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
-
-			return new Size(finalWidth, finalHeight);
-		}
-
-		double ResolveConstraints(double measured, double exact, double min, double max)
-		{
-			var resolved = measured;
-
-			if (IsExplicitSet(exact))
-			{
-				// If an exact value has been specified, try to use that
-				resolved = exact;
-			}
-
-			if (resolved > max)
-			{
-				// Apply the max value constraint (if any)
-				// If the exact value is in conflict with the max value, the max value should win
-				resolved = max;
-			}
-
-			if (resolved < min)
-			{
-				// Apply the min value constraint (if any)
-				// If the exact or max value is in conflict with the min value, the min value should win
-				resolved = min;
-			}
-
-			return resolved;
-		}
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			this.GetWrappedNativeView().GetDesiredSize(VirtualView, widthConstraint, heightConstraint);
 
 		protected override void SetupContainer()
 		{

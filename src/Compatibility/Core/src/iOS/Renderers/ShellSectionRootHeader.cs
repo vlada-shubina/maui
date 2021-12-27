@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;

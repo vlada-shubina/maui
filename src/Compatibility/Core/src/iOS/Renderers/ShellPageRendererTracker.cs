@@ -7,6 +7,7 @@ using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 

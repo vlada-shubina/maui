@@ -69,6 +69,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
 			{ typeof(FlyoutPage), typeof(FlyoutViewHandler) },
 #endif
+#if IOS
+			{ typeof(NavigationPage), typeof(Microsoft.Maui.Controls.Platform.Compatibility.NavigationRenderer) },
+#endif
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)

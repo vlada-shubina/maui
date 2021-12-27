@@ -1,14 +1,8 @@
-#if __MOBILE__
 using ObjCRuntime;
 using UIKit;
 using NativeView = UIKit.UIView;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
-#else
-using NativeView = AppKit.NSView;
-
-namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
-#endif
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class AccessibilityExtensions
 	{
@@ -28,17 +22,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityHint;
-#if __MOBILE__
+
 			if (_defaultAccessibilityHint == null)
 				_defaultAccessibilityHint = Control.AccessibilityHint;
 
 			Control.AccessibilityHint = (string)Element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
-#else
-			if (_defaultAccessibilityHint == null)
-				_defaultAccessibilityHint = Control.AccessibilityTitle;
-
-			Control.AccessibilityTitle = (string)Element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
-#endif
 
 			return _defaultAccessibilityHint;
 		}
@@ -56,7 +44,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return _defaultAccessibilityLabel;
 		}
 
-#if __MOBILE__
 		public static string SetAccessibilityHint(this UIBarItem Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)
@@ -83,7 +70,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			return _defaultAccessibilityLabel;
 		}
-#endif
 
 		public static bool? SetIsAccessibilityElement(this NativeView Control, Element Element, bool? _defaultIsAccessibilityElement = null)
 		{
@@ -94,7 +80,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (!Element.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
 				return null;
 
-#if __MOBILE__
 			if (!_defaultIsAccessibilityElement.HasValue)
 			{
 				// iOS sets the default value for IsAccessibilityElement late in the layout cycle
@@ -110,12 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 
 			Control.IsAccessibilityElement = (bool)((bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultIsAccessibilityElement);
-#else
-			if (!_defaultIsAccessibilityElement.HasValue)
-				_defaultIsAccessibilityElement = Control.AccessibilityElement;
 
-			Control.AccessibilityElement = (bool)((bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultIsAccessibilityElement);
-#endif
 
 			return _defaultIsAccessibilityElement;
 		}
@@ -128,19 +108,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (!Element.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
 				return null;
 
-#if __MOBILE__
 			if (!_defaultAccessibilityElementsHidden.HasValue)
 			{
 				_defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden || Control is UIControl;
 			}
-
-			Control.AccessibilityElementsHidden = (bool)((bool?)Element.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
-#else
-			if (!_defaultAccessibilityElementsHidden.HasValue)
-				_defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden;
-
-			Control.AccessibilityElementsHidden = (bool)((bool?)Element.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
-#endif
 
 			return _defaultAccessibilityElementsHidden;
 		}

@@ -241,6 +241,58 @@ namespace Microsoft.Maui.Platform
 			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
 
+		public static Size GetDesiredSize(this UIView? nativeView, IView view, double widthConstraint, double heightConstraint)
+		{
+			if (nativeView == null)
+			{
+				return new Size(widthConstraint, heightConstraint);
+			}
+
+			var sizeThatFits = nativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
+
+			var size = new Size(
+				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
+				sizeThatFits.Height == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Height);
+
+			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
+			{
+				nativeView.SizeToFit();
+				size = new Size(nativeView.Frame.Width, nativeView.Frame.Height);
+			}
+
+			var finalWidth = ResolveConstraints(size.Width, view.Width, view.MinimumWidth, view.MaximumWidth);
+			var finalHeight = ResolveConstraints(size.Height, view.Height, view.MinimumHeight, view.MaximumHeight);
+
+			return new Size(finalWidth, finalHeight);
+		}
+
+		static double ResolveConstraints(double measured, double exact, double min, double max)
+		{
+			var resolved = measured;
+
+			if (IsExplicitSet(exact))
+			{
+				// If an exact value has been specified, try to use that
+				resolved = exact;
+			}
+
+			if (resolved > max)
+			{
+				// Apply the max value constraint (if any)
+				// If the exact value is in conflict with the max value, the max value should win
+				resolved = max;
+			}
+
+			if (resolved < min)
+			{
+				// Apply the min value constraint (if any)
+				// If the exact or max value is in conflict with the min value, the min value should win
+				resolved = min;
+			}
+
+			return resolved;
+		}
+
 		public static int IndexOfSubview(this UIView nativeView, UIView subview)
 		{
 			if (nativeView.Subviews.Length == 0)
