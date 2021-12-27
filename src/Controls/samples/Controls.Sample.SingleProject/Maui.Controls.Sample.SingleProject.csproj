@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>net6.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
-    <RuntimeIdentifier Condition=" $(TargetFramework.Contains('-ios')) ">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers Condition=" $(TargetFramework.Contains('-ios')) ">iossimulator-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup>
