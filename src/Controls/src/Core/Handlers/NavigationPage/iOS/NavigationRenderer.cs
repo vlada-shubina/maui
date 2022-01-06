@@ -75,9 +75,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
-			var oldElement = Element;
-			Element = element;
-			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+			(this as IElementHandler).SetVirtualView(element);
 		}
 
 		public void SetElementSize(Size size)
@@ -1549,8 +1547,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
+			var oldElement = Element;
+			Element = element;
 			_navigationViewHandler.SetVirtualView(view);
-			SetElement((VisualElement)view);
+			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 		}
 
 		void IElementHandler.UpdateValue(string property)
