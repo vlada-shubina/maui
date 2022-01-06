@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Platform
 		// HARTEZ: Is this ok?
 		public static void Arrange(this INativeViewHandler nativeViewHandler, Rectangle rect)
 		{
-			nativeViewHandler.Arrange(rect);
+			nativeViewHandler.GetWrappedNativeView().Arrange(rect);
 			nativeViewHandler.Invoke(nameof(IView.Frame), rect);
 		}
 
