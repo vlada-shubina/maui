@@ -20,7 +20,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class NavigationRenderer : UINavigationController, IEffectControlProvider, INativeViewHandler
+	public class NavigationRenderer : UINavigationController, INativeViewHandler
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
 		bool _appeared;
@@ -37,10 +37,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext ?? NavPage.Handler.MauiContext;
+		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper);
+		NavigationViewHandler _navigationViewHandler;
 
 		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
 		{
+			_navigationViewHandler = new NavigationViewHandler(this);
 			// TODO MAUI:
 			//MessagingCenter.Subscribe<IVisualElementRenderer>(this, UpdateToolbarButtons, sender =>
 			//{
@@ -75,7 +78,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var oldElement = Element;
 			Element = element;
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
-			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
 
 		public void SetElementSize(Size size)
@@ -232,9 +234,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateHideNavigationBarSeparator();
 			UpdateUseLargeTitles();
 
-			// TODO MAUI:
-			//if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
-				//SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			if (NativeVersion.Supports(NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it
 			NavPageController.Pages.ForEach(async p => await PushPageAsync(p, false));
@@ -816,7 +817,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			
+
 			FlyoutPage.Flyout.IconImageSource.LoadImage(FlyoutPage.FindMauiContext(), result =>
 			{
 				var icon = result.Value;
@@ -1508,104 +1509,63 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		UIViewController INativeViewHandler.ViewController => this;
 
-		void IEffectControlProvider.RegisterEffect(Effect effect)
-		{
-			// TODO MAUI:
-			//VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
-		}
+		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			_navigationViewHandler.GetDesiredSize(widthConstraint, heightConstraint);
 
-		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return this.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-
-		void IViewHandler.NativeArrange(Rectangle rect)
-		{
-			var nativeView = this.GetWrappedNativeView();
-
-			if (nativeView == null)
-				return;
-
-			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
-			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
-			nativeView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
-
-			// The position of Bounds is usually (0,0), but in some cases (e.g., UIScrollView) it's the content offset.
-			// So just leave it a whatever value iOS thinks it should be.
-			nativeView.Bounds = new CoreGraphics.CGRect(nativeView.Bounds.X, nativeView.Bounds.Y, rect.Width, rect.Height);
-
-			(this as INativeViewHandler).Invoke(nameof(IView.Frame), rect);
-		}
+		void IViewHandler.NativeArrange(Rectangle rect) =>
+			_navigationViewHandler.NativeArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
+			_navigationViewHandler.SetMauiContext(mauiContext);
 		}
 
+		class NavigationViewHandler : ViewHandler<NavigationPage, UIView>, INativeViewHandler
+		{
+			UIViewController INativeViewHandler.ViewController => _navigationRenderer;
+			NavigationRenderer _navigationRenderer;
 
-		protected IPropertyMapper _mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper);
-		protected CommandMapper _commandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
+			public NavigationViewHandler(NavigationRenderer navigationRenderer) : base(NavigationRenderer.Mapper)
+			{
+				_navigationRenderer = navigationRenderer;
+			}
 
+			protected override UIView CreateNativeView()
+			{
+				return _navigationRenderer.View;
+			}
+
+			public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+			{
+				return this.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
+			public override void NativeArrange(Rectangle rect)
+			{
+				this.Arrange(rect);
+			}
+		}
 
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
-			_ = view ?? throw new ArgumentNullException(nameof(view));
-
-			if (Element == view)
-				return;
-
-			var oldVirtualView = Element;
-			if (oldVirtualView?.Handler != null)
-				oldVirtualView.Handler = null;
-
-			bool setupNativeView = oldVirtualView == null;
-
-			Element = (VisualElement)view;
-
-			if (Element.Handler != this)
-				Element.Handler = this;
-
-			if (setupNativeView)
-			{
-				//(this as INativeViewHandler).ConnectHandler(NativeView);
-			}
-
-			//_mapper = _defaultMapper;
-
-			if (Element is IPropertyMapperView imv)
-			{
-				var map = imv.GetPropertyMapperOverrides();
-				if (map is not null)
-				{
-					map.Chained = new[] { _mapper };
-					_mapper = map;
-				}
-			}
-
-			_mapper.UpdateProperties(this, Element);
-
+			_navigationViewHandler.SetVirtualView(view);
 			SetElement((VisualElement)view);
 		}
 
 		void IElementHandler.UpdateValue(string property)
 		{
-			if (Element == null)
-				return;
-
-			_mapper?.UpdateProperty(this, Element, property);
+			_navigationViewHandler.UpdateValue(property);
 		}
 
 		void IElementHandler.Invoke(string command, object args)
 		{
-			if (Element == null)
-				return;
-
-			_commandMapper?.Invoke(this, Element, command, args);
+			_navigationViewHandler.Invoke(command, args);
 		}
 
 		void IElementHandler.DisconnectHandler()
 		{
-			//throw new NotImplementedException();
+			(_navigationViewHandler as IElementHandler).DisconnectHandler();
 		}
 
 		internal class MauiControlsNavigationBar : UINavigationBar
@@ -1781,10 +1741,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_child?.VirtualView != null)
 				{
 					Rectangle layoutBounds = new Rectangle(IconWidth, 0, Bounds.Width - IconWidth, height);
-
-					// TODO MAUI TITLEVIEW
-					//if (_child.VirtualView.Bounds != layoutBounds)
-					//	Layout.LayoutChildIntoBoundingRegion(_child.Element, layoutBounds);
+					_child.NativeView.Arrange(layoutBounds);
 				}
 				else if (_icon != null && Superview != null)
 				{

@@ -20,20 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle rect)
 		{
-			var nativeView = this.GetWrappedNativeView();
-
-			if (nativeView == null)
-				return;
-
-			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
-			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
-			nativeView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
-
-			// The position of Bounds is usually (0,0), but in some cases (e.g., UIScrollView) it's the content offset.
-			// So just leave it a whatever value iOS thinks it should be.
-			nativeView.Bounds = new CoreGraphics.CGRect(nativeView.Bounds.X, nativeView.Bounds.Y, rect.Width, rect.Height);
-
-			Invoke(nameof(IView.Frame), rect);
+			this.Arrange(rect);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>

@@ -241,6 +241,7 @@ namespace Microsoft.Maui.Platform
 			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
 
+		// HARTEZ: Is this ok?
 		public static Size GetDesiredSize(this UIView? nativeView, IView view, double widthConstraint, double heightConstraint)
 		{
 			if (nativeView == null)
@@ -264,6 +265,27 @@ namespace Microsoft.Maui.Platform
 			var finalHeight = ResolveConstraints(size.Height, view.Height, view.MinimumHeight, view.MaximumHeight);
 
 			return new Size(finalWidth, finalHeight);
+		}
+
+		// HARTEZ: Is this ok?
+		public static void Arrange(this INativeViewHandler nativeViewHandler, Rectangle rect)
+		{
+			nativeViewHandler.Arrange(rect);
+			nativeViewHandler.Invoke(nameof(IView.Frame), rect);
+		}
+
+		public static void Arrange(this UIView? nativeView, Rectangle rect)
+		{
+			if (nativeView == null)
+				return;
+
+			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
+			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
+			nativeView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
+
+			// The position of Bounds is usually (0,0), but in some cases (e.g., UIScrollView) it's the content offset.
+			// So just leave it a whatever value iOS thinks it should be.
+			nativeView.Bounds = new CoreGraphics.CGRect(nativeView.Bounds.X, nativeView.Bounds.Y, rect.Width, rect.Height);
 		}
 
 		static double ResolveConstraints(double measured, double exact, double min, double max)
