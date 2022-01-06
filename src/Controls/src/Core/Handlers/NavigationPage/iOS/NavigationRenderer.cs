@@ -1548,9 +1548,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
 			var oldElement = Element;
-			Element = element;
+			Element = (VisualElement)view;
 			_navigationViewHandler.SetVirtualView(view);
-			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+			OnElementChanged(new VisualElementChangedEventArgs(oldElement, Element));
 		}
 
 		void IElementHandler.UpdateValue(string property)
