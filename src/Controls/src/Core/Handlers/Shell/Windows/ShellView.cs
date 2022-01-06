@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 				ShellController.OnFlyoutItemSelected(item);
 		}
 
-		#region IVisualElementRenderer
+		#region INativeViewHandler
 
 		public EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		#endregion IVisualElementRenderer
+		#endregion INativeViewHandler
 
 
 

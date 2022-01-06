@@ -6,6 +6,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Graphics;
 
+#if IOS || MACCATALYST
+using NativeView = UIKit.UIView;
+#elif MONOANDROID
+using NativeView = Android.Views.View;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using NativeView = System.Object;
+#endif
+
 namespace Microsoft.Maui.Controls
 {
 	public static class ViewExtensions
@@ -189,6 +199,21 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return default;
+		}
+
+		public static NativeView ToNative(this Element element)
+		{
+			var mauiContext = element.FindMauiContext() 
+				?? throw new InvalidOperationException($"Unable to locate MauiContext on {element}. Try passing the MauiContext in as an argument or parenting this element");
+
+			var handler = element.ToHandler(mauiContext);
+
+			if (handler.NativeView is not NativeView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {element} to {typeof(NativeView)}");
+			}
+
+			return result;
 		}
 
 		internal static Element? FindParentWith(this Element element, Func<Element, bool> withMatch, bool includeThis = false)

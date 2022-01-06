@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateFlowDirection(this UIView nativeView, IView view)
+		public static bool UpdateFlowDirection(this UIView nativeView, IView view)
 		{
 			UISemanticContentAttribute updateValue = nativeView.SemanticContentAttribute;
 
@@ -115,7 +115,12 @@ namespace Microsoft.Maui.Platform
 				updateValue = UISemanticContentAttribute.ForceLeftToRight;
 
 			if (updateValue != nativeView.SemanticContentAttribute)
+			{
 				nativeView.SemanticContentAttribute = updateValue;
+				return true;
+			}
+
+			return false;
 		}
 
 		public static void UpdateOpacity(this UIView nativeView, IView view)

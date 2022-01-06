@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
+#elif IOS
+			{ typeof(Shell), typeof(Microsoft.Maui.Controls.Platform.Compatibility.ShellRenderer) },
 #endif
 			{ typeof(Application), typeof(ApplicationHandler) },
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
