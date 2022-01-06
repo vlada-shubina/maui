@@ -38,12 +38,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext ?? NavPage.Handler.MauiContext;
 		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper);
-		NavigationViewHandler _navigationViewHandler;
+		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
 
 		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
 		{
-			_navigationViewHandler = new NavigationViewHandler(this);
 			// TODO MAUI:
 			//MessagingCenter.Subscribe<IVisualElementRenderer>(this, UpdateToolbarButtons, sender =>
 			//{
@@ -1508,64 +1507,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIViewController INativeViewHandler.ViewController => this;
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			_navigationViewHandler.GetDesiredSize(widthConstraint, heightConstraint);
+			View.GetDesiredSize(Element, widthConstraint, heightConstraint);
 
 		void IViewHandler.NativeArrange(Rectangle rect) =>
-			_navigationViewHandler.NativeArrange(rect);
+			View.Arrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
-			_navigationViewHandler.SetMauiContext(mauiContext);
-		}
-
-		class NavigationViewHandler : ViewHandler<NavigationPage, UIView>, INativeViewHandler
-		{
-			UIViewController INativeViewHandler.ViewController => _navigationRenderer;
-			NavigationRenderer _navigationRenderer;
-
-			public NavigationViewHandler(NavigationRenderer navigationRenderer) : base(NavigationRenderer.Mapper)
-			{
-				_navigationRenderer = navigationRenderer;
-			}
-
-			protected override UIView CreateNativeView()
-			{
-				return _navigationRenderer.View;
-			}
-
-			public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-			{
-				return this.GetDesiredSize(widthConstraint, heightConstraint);
-			}
-
-			public override void NativeArrange(Rectangle rect)
-			{
-				this.Arrange(rect);
-			}
 		}
 
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
 			var oldElement = Element;
 			Element = (VisualElement)view;
-			_navigationViewHandler.SetVirtualView(view);
+			Mapper.UpdateProperties(this, Element);
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, Element));
 		}
 
 		void IElementHandler.UpdateValue(string property)
 		{
-			_navigationViewHandler.UpdateValue(property);
+			Mapper.UpdateProperty(this, Element, property);
 		}
 
 		void IElementHandler.Invoke(string command, object args)
 		{
-			_navigationViewHandler.Invoke(command, args);
+			CommandMapper.Invoke(this, Element, command, args);
 		}
 
 		void IElementHandler.DisconnectHandler()
 		{
-			(_navigationViewHandler as IElementHandler).DisconnectHandler();
 		}
 
 		internal class MauiControlsNavigationBar : UINavigationBar
