@@ -69,8 +69,8 @@ parameters:
         bootsiOS: $(iOS.Msi)
         artifact: net6-windows
       - name: macOS
-        poolName: $(macOSXNet6VmPool)
-        vmImage: $(macOSXNet6VmImage)
+        poolName: 'Azure Pipelines'
+        vmImage: internal-macos-11
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
@@ -85,8 +85,8 @@ parameters:
         bootsiOS: $(iOS.Msi)
         artifact: nuget
       - name: macOS
-        poolName: $(macOSXNet6VmPool)
-        vmImage: $(macOSXNet6VmImage)
+        poolName: 'Azure Pipelines'
+        vmImage: internal-macos-11
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
@@ -120,11 +120,12 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
-                  - Agent.OSVersionFamily -equals 11.3
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@yaml-templates
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -158,11 +159,12 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if eq(BuildPlatform.name, 'macos') }} :
+            ${{ if eq(BuildPlatform.name, 'macOS') }}:
               demands:
                 - Agent.OSArchitecture -equals X64
-                - Agent.OSVersionFamily -equals 11.3
           steps:
+            - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+              - template: agent-cleanser/v1.yml@yaml-templates
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
@@ -219,11 +221,12 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
-                  - Agent.OSVersionFamily -equals 11.3
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@yaml-templates
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -263,11 +266,12 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if eq(BuildPlatform.name, 'macos') }} :
+              ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 demands:
                   - Agent.OSArchitecture -equals X64
-                  - Agent.OSVersionFamily -equals 11.3
             steps:
+              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                - template: agent-cleanser/v1.yml@yaml-templates
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
