@@ -28,4 +28,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials-net6.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Platform\Windows\Styles\ProgressBarStyle.xaml">
+      <Generator></Generator>
+    </None>
+  </ItemGroup>
 </Project>

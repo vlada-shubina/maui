@@ -7,13 +7,11 @@ namespace Maui.Controls.Sample.Pages
 		public TemplatePage()
 		{
 			InitializeComponent();
-		}
 
-		int count = 0;
-		private void OnCounterClicked(object sender, EventArgs e)
-		{
-			count++;
-			CounterLabel.Text = $"Current count: {count}";
+			Update.Clicked += (sender, args) => {
+				var value = double.Parse(ProgressValue.Text);
+				Progress.Progress = value;
+			};
 		}
 	}
 }
